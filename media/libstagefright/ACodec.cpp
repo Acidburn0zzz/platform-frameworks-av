@@ -44,6 +44,8 @@
 #include <media/stagefright/OMXClient.h>
 #include <media/stagefright/PersistentSurface.h>
 #include <media/stagefright/SurfaceUtils.h>
+#include <media/stagefright/FFMPEGSoftCodec.h>
+
 #include <media/hardware/HardwareAPI.h>
 
 #include <OMX_AudioExt.h>
@@ -1749,7 +1751,7 @@ const char *ACodec::getComponentRole(
     }
 
     if (i == kNumMimeToRole) {
-        return NULL;
+        return FFMPEGSoftCodec::getComponentRole(isEncoder, mime);
     }
 
     return isEncoder ? kMimeToRole[i].encoderRole
@@ -2305,6 +2307,11 @@ status_t ACodec::configureCodec(
             err = INVALID_OPERATION;
         } else {
             err = setupEAC3Codec(encoder, numChannels, sampleRate);
+        }
+    } else {
+        if (!strncmp(mComponentName.c_str(), "OMX.ffmpeg.", 11) && !mIsEncoder) {
+            err = FFMPEGSoftCodec::setAudioFormat(
+               msg, mime, mOMX, mNode);
         }
     }
 
@@ -3361,6 +3368,9 @@ status_t ACodec::setupVideoDecoder(
     OMX_VIDEO_CODINGTYPE compressionFormat;
     status_t err = GetVideoCodingTypeFromMime(mime, &compressionFormat);
 
+    err = FFMPEGSoftCodec::setVideoFormat(err,
+                    msg, mime, mOMX, mNode, mIsEncoder, &compressionFormat,
+                    mComponentName.c_str());
     if (err != OK) {
         return err;
     }
@@ -5167,6 +5177,14 @@ status_t ACodec::getPortFormat(OMX_U32 portIndex, sp<AMessage> &notify) {
 
                 default:
                 {
+                    if (!mIsEncoder && !strncmp(mComponentName.c_str(), "OMX.ffmpeg.", 11)) {
+                        err = FFMPEGSoftCodec::getVideoPortFormat(portIndex,
+                                (int)videoDef->eCompressionFormat, notify, mOMX, mNode);
+                        if (err == OK) {
+                            break;
+                        }
+                    }
+
                     if (mIsEncoder ^ (portIndex == kPortIndexOutput)) {
                         // should be CodingUnused
                         ALOGE("Raw port video compression format is %s(%d)",
@@ -5294,6 +5312,13 @@ status_t ACodec::getPortFormat(OMX_U32 portIndex, sp<AMessage> &notify) {
 
                 case OMX_AUDIO_CodingFLAC:
                 {
+                    if (!mIsEncoder && !strncmp(mComponentName.c_str(), "OMX.ffmpeg.", 11)) {
+                        err = FFMPEGSoftCodec::getAudioPortFormat(portIndex,
+                                (int)audioDef->eEncoding, notify, mOMX, mNode);
+                        if (err != OK) {
+                            return err;
+                        }
+                    } else {
                     OMX_AUDIO_PARAM_FLACTYPE params;
                     InitOMXParams(&params);
                     params.nPortIndex = portIndex;
@@ -5307,6 +5332,7 @@ status_t ACodec::getPortFormat(OMX_U32 portIndex, sp<AMessage> &notify) {
                     notify->setString("mime", MEDIA_MIMETYPE_AUDIO_FLAC);
                     notify->setInt32("channel-count", params.nChannels);
                     notify->setInt32("sample-rate", params.nSampleRate);
+                    }
                     break;
                 }
 
@@ -5449,6 +5475,14 @@ status_t ACodec::getPortFormat(OMX_U32 portIndex, sp<AMessage> &notify) {
                 }
 
                 default:
+                    if (!mIsEncoder && !strncmp(mComponentName.c_str(), "OMX.ffmpeg.", 11)) {
+                        err = FFMPEGSoftCodec::getAudioPortFormat(portIndex,
+                                (int)audioDef->eEncoding, notify, mOMX, mNode);
+                    }
+                    if (err == OK) {
+                        break;
+                    }
+
                     ALOGE("Unsupported audio coding: %s(%d)\n",
                             asString(audioDef->eEncoding), audioDef->eEncoding);
                     return BAD_TYPE;

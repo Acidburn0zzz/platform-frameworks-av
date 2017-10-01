@@ -26,6 +26,7 @@
 #include <fcntl.h>
 
 #include <media/stagefright/foundation/ADebug.h>
+#include <cutils/properties.h>
 
 namespace android {
 
@@ -56,6 +57,11 @@ OMXMaster::OMXMaster()
 
     addVendorPlugin();
     addPlugin(new SoftOMXPlugin);
+
+    char plugin[PROPERTY_VALUE_MAX];
+    if (property_get("media.sf.omx-plugin", plugin, NULL)) {
+        addPlugin(plugin);
+    }
 }
 
 OMXMaster::~OMXMaster() {

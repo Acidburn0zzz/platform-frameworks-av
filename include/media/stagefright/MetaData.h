@@ -54,6 +54,10 @@ enum {
     kKeyBitRate           = 'brte',  // int32_t (bps)
     kKeyMaxBitRate        = 'mxBr',  // int32_t (bps)
     kKeyStreamHeader      = 'stHd',  // raw data
+    kKeyCodecId           = 'cdid',  // int32_t
+    kKeyCodedSampleBits   = 'cosb',  // int32_t
+    kKeySampleFormat      = 'sfmt',  // int32_t
+    kKeyBitsPerRawSample  = 'sbit',  // int32_t
     kKeyESDS              = 'esds',  // raw data
     kKeyAACProfile        = 'aacp',  // int32_t
     kKeyAVCC              = 'avcc',  // raw data
@@ -69,6 +73,7 @@ enum {
     kKeyIsSyncFrame       = 'sync',  // int32_t (bool)
     kKeyIsCodecConfig     = 'conf',  // int32_t (bool)
     kKeyTime              = 'time',  // int64_t (usecs)
+    kKeyTimeBoot          = 'timb',  // int64_t (usecs)
     kKeyDecodingTime      = 'decT',  // int64_t (decoding timestamp in usecs)
     kKeyNTPTime           = 'ntpT',  // uint64_t (ntp-timestamp)
     kKeyTargetTime        = 'tarT',  // int64_t (usecs)
@@ -135,6 +140,23 @@ enum {
     kKeyValidSamples      = 'valD',  // int32_t
 
     kKeyIsUnreadable      = 'unre',  // bool (int32_t)
+
+    kKeyRawCodecSpecificData = 'rcsd',  // raw data - added to support mmParser
+    kKeyDivXVersion       = 'DivX',  // int32_t
+    kKeyDivXDrm           = 'QDrm',  // void *
+    kKeyWMAEncodeOpt      = 'eopt',  // int32_t
+    kKeyWMABlockAlign     = 'blka',  // int32_t
+    kKeyWMAVersion        = 'wmav',  // int32_t
+    kKeyWMAAdvEncOpt1     = 'ade1',  // int16_t
+    kKeyWMAAdvEncOpt2     = 'ade2',  // int32_t
+    kKeyWMAFormatTag      = 'fmtt',  // int64_t
+    kKeyWMABitspersample  = 'bsps',  // int64_t
+    kKeyWMAVirPktSize     = 'vpks',  // int64_t
+    kKeyWMVProfile        = 'wmvp',  // int32_t
+
+    kKeyWMVVersion        = 'wmvv',  // int32_t
+    kKeyRVVersion         = '#rvv',  // int32_t
+    kKeyBlockAlign        = 'ablk',   // int32_t , should be different from kKeyWMABlockAlign
 
     // An indication that a video buffer has been rendered.
     kKeyRendered          = 'rend',  // bool (int32_t)
@@ -204,6 +226,12 @@ enum {
                                    // transfer Function, value defined by ColorAspects.Transfer.
     kKeyColorMatrix      = 'cMtx', // int32_t,
                                    // color Matrix, value defined by ColorAspects.MatrixCoeffs.
+    kKeyArbitraryMode     = 'ArbM',
+
+    // Indicate if it is OK to hold on to the MediaBuffer and not
+    // release it immediately
+    kKeyCanDeferRelease   = 'drel', // bool (int32_t)
+
     kKeyTemporalLayerId  = 'iLyr', // int32_t, temporal layer-id. 0-based (0 => base layer)
     kKeyTemporalLayerCount = 'cLyr', // int32_t, number of temporal layers encoded
 };
@@ -213,6 +241,32 @@ enum {
     kTypeAVCC        = 'avcc',
     kTypeHVCC        = 'hvcc',
     kTypeD263        = 'd263',
+};
+
+enum {
+    kTypeDivXVer_3_11,
+    kTypeDivXVer_4,
+    kTypeDivXVer_5,
+    kTypeDivXVer_6,
+};
+
+enum {
+    kTypeWMA,
+    kTypeWMAPro,
+    kTypeWMALossLess,
+};
+
+enum {
+    kTypeWMVVer_7, // WMV1
+    kTypeWMVVer_8, // WMV2
+    kTypeWMVVer_9, // WMV3
+};
+
+// http://en.wikipedia.org/wiki/RealVideo
+enum {
+    kTypeRVVer_G2, // rv20: RealVideo G2
+    kTypeRVVer_8,  // rv30: RealVideo 8
+    kTypeRVVer_9,  // rv40: RealVideo 9
 };
 
 class MetaData : public RefBase {

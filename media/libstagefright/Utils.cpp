@@ -45,6 +45,8 @@
 #include <media/stagefright/Utils.h>
 #include <media/AudioParameter.h>
 
+#include <media/stagefright/FFMPEGSoftCodec.h>
+
 namespace android {
 
 uint16_t U16_AT(const uint8_t *ptr) {
@@ -1056,6 +1058,7 @@ status_t convertMetaDataToMessage(
         memcpy(buffer->data(), data, size);
     }
 
+    FFMPEGSoftCodec::convertMetaDataToMessageFF(meta, &msg);
     *format = msg;
 
     return OK;
@@ -1434,6 +1437,7 @@ void convertMessageToMetaData(const sp<AMessage> &msg, sp<MetaData> &meta) {
     }
 
     // XXX TODO add whatever other keys there are
+    FFMPEGSoftCodec::convertMessageToMetaDataFF(msg, meta);
 
 #if 0
     ALOGI("converted %s to:", msg->debugString(0).c_str());

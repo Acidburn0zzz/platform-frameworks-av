@@ -50,6 +50,8 @@
 
 #include <private/android_filesystem_config.h>
 
+#include <media/stagefright/FFMPEGSoftCodec.h>
+
 namespace android {
 
 bool DataSource::getUInt16(off64_t offset, uint16_t *x) {
@@ -180,6 +182,7 @@ void DataSource::RegisterDefaultSniffers() {
         RegisterSniffer_l(SniffWVM);
     }
     RegisterSniffer_l(SniffMidi);
+    RegisterSniffer_l(FFMPEGSoftCodec::getSniffer());
 
     char value[PROPERTY_VALUE_MAX];
     if (property_get("drm.service.enabled", value, NULL)
